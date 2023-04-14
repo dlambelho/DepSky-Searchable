@@ -7,7 +7,6 @@ import com.dropbox.core.v2.files.DeleteErrorException;
 import com.dropbox.core.v2.files.FileCategory;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderErrorException;
-import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.SearchOptions;
 import com.dropbox.core.v2.files.SearchV2Result;
 import com.dropbox.core.v2.files.UploadErrorException;
@@ -22,18 +21,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class DropboxAccessDriver implements IDepSkySDriver {
 
-    private DbxClientV2 client;
-
     private static final String defaultNamespace = "depsky";
-
+    private DbxClientV2 client;
     private String accessKey;
 
     private String secretKey;
@@ -50,7 +45,7 @@ public class DropboxAccessDriver implements IDepSkySDriver {
     @Override
     public String uploadData(String bucket, byte[] data, String fileId, String[] uploadToAnotherAccount)
             throws StorageCloudException {
-        String folder =  !this.isEmpty(bucket) ? bucket : defaultNamespace;
+        String folder = !this.isEmpty(bucket) ? bucket : defaultNamespace;
 
         try (InputStream in = new ByteArrayInputStream(data)) {
             FileMetadata metadata = client.files().uploadBuilder("/" + folder + "/" + fileId).uploadAndFinish(in);
@@ -70,7 +65,7 @@ public class DropboxAccessDriver implements IDepSkySDriver {
     public byte[] downloadData(String bucket, String id, String[] uploadToAnotherAccount) throws StorageCloudException {
         FileMetadata metadata;
 
-        String folder =  !this.isEmpty(bucket) ? bucket : defaultNamespace;
+        String folder = !this.isEmpty(bucket) ? bucket : defaultNamespace;
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
@@ -86,7 +81,7 @@ public class DropboxAccessDriver implements IDepSkySDriver {
 
     @Override
     public boolean deleteData(String bucket, String id, String[] uploadToAnotherAccount) throws StorageCloudException {
-        String folder =  !this.isEmpty(bucket) ? bucket : defaultNamespace;
+        String folder = !this.isEmpty(bucket) ? bucket : defaultNamespace;
 
         try {
             client.files().deleteV2("/" + folder + "/" + id);
@@ -117,7 +112,7 @@ public class DropboxAccessDriver implements IDepSkySDriver {
     public LinkedList<String> listNames(String prefix, String bucket, String[] uploadToAnotherAccount)
             throws StorageCloudException {
 
-        String folder =  !this.isEmpty(bucket) ? bucket : defaultNamespace;
+        String folder = !this.isEmpty(bucket) ? bucket : defaultNamespace;
 
         try {
             LinkedList<String> filesList = new LinkedList<>();
@@ -156,7 +151,7 @@ public class DropboxAccessDriver implements IDepSkySDriver {
             SearchOptions options = SearchOptions.newBuilder().withFileCategories(List.of(FileCategory.FOLDER)).build();
             SearchV2Result result = client.files().searchV2Builder(bucket).withOptions(options).start();
 
-            if(result.getMatches().isEmpty()){
+            if (result.getMatches().isEmpty()) {
                 return null;
             }
 

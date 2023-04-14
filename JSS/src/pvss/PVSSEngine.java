@@ -7,6 +7,7 @@
  * the Source Creation and Management node. Right-click the template and choose
  * Open. You can then make changes to the template in the Source Editor.
  */
+
 package pvss;
 
 import java.io.ByteArrayOutputStream;
@@ -15,21 +16,19 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESedeKeySpec;
 
 /**
- *
  * @author neves
  */
 public class PVSSEngine {
 
     public static SecureRandom random = new SecureRandom();
+    /////////////////////// some static utilities methods //////////////////////
+    private static MessageDigest md = null;
     private PublicInfo publicInfo;
 
     private PVSSEngine(PublicInfo publicInfo) {
@@ -69,8 +68,57 @@ public class PVSSEngine {
     }
 
     public static PVSSEngine getInstance(PublicInfo publicInfo) throws InvalidVSSScheme {
-    	publicInfo.setInterpolationPoints();
+        publicInfo.setInterpolationPoints();
         return new PVSSEngine(publicInfo);
+    }
+
+    public static BigInteger hash(PublicInfo info, byte[] data) throws InvalidVSSScheme {
+        try {
+            if (md == null) {
+                md = MessageDigest.getInstance(info.getHashAlgorithm());
+            } else {
+                md.reset();
+            }
+            return new BigInteger(md.digest(data));
+        } catch (NoSuchAlgorithmException e) {
+            throw new InvalidVSSScheme("Invalid hash algorithm "
+                    + info.getHashAlgorithm());
+        }
+    }
+
+    public static byte[] encrypt(PublicInfo info, byte[] key, byte[] data) throws InvalidVSSScheme {
+
+
+        try {
+            //System.out.println("Key length " + key.length);
+            SecretKey k = SecretKeyFactory.getInstance("DESEDE").generateSecret(
+                    new DESedeKeySpec(key));
+            Cipher cipher = Cipher.getInstance("DESEDE");
+            cipher.init(Cipher.ENCRYPT_MODE, k);
+
+            return cipher.doFinal(data);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new InvalidVSSScheme("Invalid block cipher algorithm " + info);
+        } catch (Exception e) {
+            throw new RuntimeException("Problems encrypting", e);
+        }
+    }
+
+    public static byte[] decrypt(PublicInfo info, byte[] key, byte[] data) throws InvalidVSSScheme {
+        try {
+
+            //System.out.println("keylen in decrypt is " + key.length);
+            SecretKey k = SecretKeyFactory.getInstance("DESEDE").generateSecret(
+                    new DESedeKeySpec(key));
+
+            Cipher cipher = Cipher.getInstance("DESEDE");
+            cipher.init(Cipher.DECRYPT_MODE, k);
+            return cipher.doFinal(data);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new InvalidVSSScheme("Invalid block cipher algorithm " + info);
+        } catch (Exception e) {
+            throw new RuntimeException("Problems decrypting", e);
+        }
     }
 
     public PublicInfo getPublicInfo() {
@@ -88,7 +136,7 @@ public class PVSSEngine {
 
         for (int i = 0; i < secretKeys.length; i++) {
             secretKeys[i] = generateRandomNumber();
-            //verifica se a chave i e igual a alguma das chaves geradas 
+            //verifica se a chave i e igual a alguma das chaves geradas
             //anteriormente
             for (int j = 0; j < i; j++) {
                 if (secretKeys[i].equals(secretKeys[j])) {
@@ -112,7 +160,7 @@ public class PVSSEngine {
     }
 
     public PublishedShares generalPublishShares(byte[] data,
-            BigInteger[] publicKeys, int choice) throws InvalidVSSScheme {
+                                                BigInteger[] publicKeys, int choice) throws InvalidVSSScheme {
 
         BigInteger secret = generateSecret();
 
@@ -125,7 +173,7 @@ public class PVSSEngine {
         byte[] ensecret = encryptedSecret.toByteArray();
         byte[] pad = new byte[24];
         int len = encryptedSecret.toByteArray().length;
-        
+
         //System.out.println("Orig byte length of encrypted secret: " + len);
         for (int i = 0; i < len; i++) {
             pad[i] = encryptedSecret.toByteArray()[i];
@@ -143,7 +191,8 @@ public class PVSSEngine {
         return publishShares(secret, U, publicKeys, choice);
     }
 
-    public PublishedShares publishShares(BigInteger secret, byte[] U, BigInteger[] publicKeys, int choice) throws InvalidVSSScheme {
+    public PublishedShares publishShares(BigInteger secret, byte[] U, BigInteger[] publicKeys, int choice)
+            throws InvalidVSSScheme {
 
         int t = getPublicInfo().getT();
         int n = getPublicInfo().getN();
@@ -347,7 +396,7 @@ public class PVSSEngine {
                 }
             }
 
-           //System.out.println("lambdanumer " + lambdanumer + ", lambdadenom " + lambdadenom);
+            //System.out.println("lambdanumer " + lambdanumer + ", lambdadenom " + lambdadenom);
 
             gcd = lambdadenom.gcd(lambdanumer);
             lambdadenom = lambdadenom.divide(gcd);
@@ -372,7 +421,7 @@ public class PVSSEngine {
             BigInteger invdenom = lambdadenom.modInverse(qm1);
             lambda = lambdanumer.multiply(invdenom).mod(qm1);
             //System.out.println("i = " + i + ", lambda = " + lambda + ", lambdanumer "
-               //     + lambdanumer + ", lambdadenom " + lambdadenom);
+            //     + lambdanumer + ", lambdadenom " + lambdadenom);
 
             secret = secret.multiply(shares[x[i]].getShare().modPow(lambda, q)).mod(q);
         }
@@ -455,57 +504,6 @@ public class PVSSEngine {
                 }
                 last = i;
             }
-        }
-    }
-    /////////////////////// some static utilities methods //////////////////////
-    private static MessageDigest md = null;
-
-    public static BigInteger hash(PublicInfo info, byte[] data) throws InvalidVSSScheme {
-        try {
-            if (md == null) {
-                md = MessageDigest.getInstance(info.getHashAlgorithm());
-            } else {
-                md.reset();
-            }
-            return new BigInteger(md.digest(data));
-        } catch (NoSuchAlgorithmException e) {
-            throw new InvalidVSSScheme("Invalid hash algorithm "
-                    + info.getHashAlgorithm());
-        }
-    }
-
-    public static byte[] encrypt(PublicInfo info, byte[] key, byte[] data) throws InvalidVSSScheme {
-
-
-        try {
-            //System.out.println("Key length " + key.length);
-            SecretKey k = SecretKeyFactory.getInstance("DESEDE").generateSecret(
-                    new DESedeKeySpec(key));
-            Cipher cipher = Cipher.getInstance("DESEDE");
-            cipher.init(Cipher.ENCRYPT_MODE, k);
-
-            return cipher.doFinal(data);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new InvalidVSSScheme("Invalid block cipher algorithm " + info);
-        } catch (Exception e) {
-            throw new RuntimeException("Problems encrypting", e);
-        }
-    }
-
-    public static byte[] decrypt(PublicInfo info, byte[] key, byte[] data) throws InvalidVSSScheme {
-        try {
-
-            //System.out.println("keylen in decrypt is " + key.length);
-            SecretKey k = SecretKeyFactory.getInstance("DESEDE").generateSecret(
-                    new DESedeKeySpec(key));
-
-            Cipher cipher = Cipher.getInstance("DESEDE");
-            cipher.init(Cipher.DECRYPT_MODE, k);
-            return cipher.doFinal(data);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new InvalidVSSScheme("Invalid block cipher algorithm " + info);
-        } catch (Exception e) {
-            throw new RuntimeException("Problems decrypting", e);
         }
     }
 

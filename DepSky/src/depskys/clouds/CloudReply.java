@@ -1,15 +1,13 @@
 package depskys.clouds;
 
-import java.util.LinkedList;
-
 import depskys.core.DepSkySDataUnit;
+import java.util.LinkedList;
 
 /**
  * Class that contains the response for each cloud request
- * 
+ *
  * @author bruno quaresma
  * @author tiago oliveira
- *
  */
 public class CloudReply {
 
@@ -23,15 +21,8 @@ public class CloudReply {
     public long receiveTime, initReceiveTime, startTime, metadataReceiveTime;
     public LinkedList<String> listNames;
 
-    @Override
-    public String toString() {
-        return "sn:" + sequence + "#cloud:" + cloudId + "#type:" + type
-                + "#regId:" + (reg != null ? reg.regId : "null")
-                + "#op:" + protoOp + "#vn:" + vNumber + "#mdfile?" + isMetadataFile;
-    }
-
     public CloudReply(int type, int sequence, String cloudId, Object response,
-            String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, byte[] hashMatching) {
+                      String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, byte[] hashMatching) {
         this.type = type;
         this.sequence = sequence;
         this.cloudId = cloudId;
@@ -44,8 +35,9 @@ public class CloudReply {
     }
 
     public CloudReply(int type, int sequence, String cloudId, Object response,
-            String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile,
-            byte[] value, String vNumber, byte[] allDataHash, LinkedList<String> list_names, byte[] hashMatching, String[] accessToOtherAccount) {
+                      String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile,
+                      byte[] value, String vNumber, byte[] allDataHash, LinkedList<String> list_names,
+                      byte[] hashMatching, String[] accessToOtherAccount) {
         this.type = type;
         this.sequence = sequence;
         this.cloudId = cloudId;
@@ -63,8 +55,9 @@ public class CloudReply {
     }
 
     public CloudReply(int type, int sequence, String cloudId, Object response,
-            String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile,
-            String vNumber, String vHash, byte[] allDataHash, byte[] hashMatching, String[] accessToOtherAccount, int numVersionToKeep) {
+                      String container, DepSkySDataUnit reg, int protoOp, boolean isMetadataFile,
+                      String vNumber, String vHash, byte[] allDataHash, byte[] hashMatching,
+                      String[] accessToOtherAccount, int numVersionToKeep) {
         this.type = type;
         this.sequence = sequence;
         this.cloudId = cloudId;
@@ -80,15 +73,20 @@ public class CloudReply {
         this.accessToOtherAccount = accessToOtherAccount;
         this.numVersionToKeep = numVersionToKeep;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return "sn:" + sequence + "#cloud:" + cloudId + "#type:" + type
+                + "#regId:" + (reg != null ? reg.regId : "null")
+                + "#op:" + protoOp + "#vn:" + vNumber + "#mdfile?" + isMetadataFile;
+    }
 
     public void setVersionNumber(String vNumber) {
         this.vNumber = vNumber;
     }
-    
-    public void setListNames(LinkedList<String> listNames){
-    	this.listNames = listNames;
+
+    public void setListNames(LinkedList<String> listNames) {
+        this.listNames = listNames;
     }
 
     public void setVersionHash(String vHash) {

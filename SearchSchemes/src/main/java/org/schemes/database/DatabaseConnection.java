@@ -24,8 +24,9 @@ public class DatabaseConnection {
     }
 
     public static Connection getInstance() {
-        if(dbConn == null)
+        if (dbConn == null) {
             new DatabaseConnection();
+        }
 
         return dbConn;
     }

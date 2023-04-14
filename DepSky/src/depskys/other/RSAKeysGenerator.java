@@ -16,6 +16,21 @@ import java.security.PublicKey;
  */
 public class RSAKeysGenerator {
 
+    // Generate public/private key pairs
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("USAGE: RSAKeysGenerator <id>\n" +
+                    "- parameter <id> is the key pair identifier");
+        } else {
+            try {
+                new RSAKeysGenerator().generateRSAKeyPair(Integer.parseInt(args[0]));
+            } catch (Exception ex) {
+                System.out.println("EXCEPTION: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+    }
+
     public void generateRSAKeyPair(int id) throws Exception {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(1024);
@@ -61,20 +76,5 @@ public class RSAKeysGenerator {
         oos.writeObject(prk);
         oos.flush();
         oos.close();
-    }
-
-    // Generate public/private key pairs
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            System.out.println("USAGE: RSAKeysGenerator <id>\n" +
-                    "- parameter <id> is the key pair identifier");
-        } else {
-            try {
-                new RSAKeysGenerator().generateRSAKeyPair(Integer.parseInt(args[0]));
-            } catch (Exception ex) {
-                System.out.println("EXCEPTION: " + ex.getMessage());
-                ex.printStackTrace();
-            }
-        }
     }
 }

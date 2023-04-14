@@ -35,17 +35,12 @@ public class BXTSearch {
     private static final String SELECT_BXTXSET = "SELECT COUNT(*) FROM CLUSION.BXT_XSET WHERE CROSS_TAG = ?";
 
     private static final String UPDATE_BXTTSET = "UPDATE CLUSION.BXT_TSET SET FILE WHERE WORD LIKE ?";
-
-    static Multimap<byte[], byte[]> Tset = ArrayListMultimap.create();
-    HashSet<String> xSet;
-
     public static SecureRandom random = new SecureRandom();
-
     public static int sizeOfFileIdentifer = 150;
-
+    static Multimap<byte[], byte[]> Tset = ArrayListMultimap.create();
     static byte[] keyS = new byte[32];
     static byte[] keyX = new byte[32];
-
+    HashSet<String> xSet;
 
     public static List<byte[]> setup(Multimap<String, String> lookup)
             throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,

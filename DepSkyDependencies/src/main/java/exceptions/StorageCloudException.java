@@ -12,7 +12,7 @@ public class StorageCloudException extends Exception implements Serializable {
     public static final String INVALID_SESSION = "Incorrect session properties.";
     public static final String UNKNOWN_EXCP = "Unknown Exception Thrown. Please report to authors.";
     public static final String LOGIN_ERROR = "Not logged in. Please login.";
-    
+
     public StorageCloudException(String message) {
         super(message);
     }

@@ -1,15 +1,13 @@
 package depskys.clouds;
 
-import java.util.Properties;
-
 import depskys.core.DepSkySDataUnit;
+import java.util.Properties;
 
 /**
  * Class that represents a request for each cloud
- * 
+ *
  * @author bruno quaresma
  * @author tiago oliveira
- *
  */
 public class CloudRequest {
 
@@ -25,8 +23,8 @@ public class CloudRequest {
     public String resourceToLock;
 
     public CloudRequest(int op, int seqNumber, String cid, String did,
-            byte[] w_data, Properties props, DepSkySDataUnit reg, int protoOp,
-            boolean isMetadataFile, byte[] hashMatching, String[] accessToOtherAccount) {
+                        byte[] w_data, Properties props, DepSkySDataUnit reg, int protoOp,
+                        boolean isMetadataFile, byte[] hashMatching, String[] accessToOtherAccount) {
         this.op = op;
         this.seqNumber = seqNumber;
         this.cid = cid;
@@ -40,10 +38,11 @@ public class CloudRequest {
         this.accessToOtherAccount = accessToOtherAccount;
     }
 
-       
+
     public CloudRequest(int op, int seqNumber, String cid, String did,
-            byte[] w_data, Properties props, DepSkySDataUnit reg, int protoOp,
-            boolean isMetadataFile, String vNumber, String vHash, byte[] allDataHash, String[] accessToOtherAccount) {
+                        byte[] w_data, Properties props, DepSkySDataUnit reg, int protoOp,
+                        boolean isMetadataFile, String vNumber, String vHash, byte[] allDataHash,
+                        String[] accessToOtherAccount) {
         this.op = op;
         this.seqNumber = seqNumber;
         this.cid = cid;
@@ -58,9 +57,9 @@ public class CloudRequest {
         this.allDataHash = allDataHash;
         this.accessToOtherAccount = accessToOtherAccount;
     }
-    
-    public CloudRequest(int op, int seqNumber, String cid, String[] namesToDelete, 
-    		DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, String[] accessToOtherAccount) {
+
+    public CloudRequest(int op, int seqNumber, String cid, String[] namesToDelete,
+                        DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, String[] accessToOtherAccount) {
         this.op = op;
         this.seqNumber = seqNumber;
         this.cid = cid;
@@ -70,43 +69,44 @@ public class CloudRequest {
         this.protoOp = protoOp;
         this.accessToOtherAccount = accessToOtherAccount;
     }
-    
+
     public CloudRequest(int op, int seqNumber, String cid, String did,
-    		DepSkySDataUnit reg, int protoOp, String permission, String[] canonicalId){
-    	   this.op = op;
-           this.seqNumber = seqNumber;
-           this.cid = cid;
-           this.did = did;
-           this.reg = reg;
-           this.protoOp = protoOp;
-           this.permission = permission;
-           this.canonicalId = canonicalId;
+                        DepSkySDataUnit reg, int protoOp, String permission, String[] canonicalId) {
+        this.op = op;
+        this.seqNumber = seqNumber;
+        this.cid = cid;
+        this.did = did;
+        this.reg = reg;
+        this.protoOp = protoOp;
+        this.permission = permission;
+        this.canonicalId = canonicalId;
     }
-    
+
     public CloudRequest(int op, int seqNumber, String cid, String did,
-    		DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, int numVersionToKeep){
-    	   this.op = op;
-           this.seqNumber = seqNumber;
-           this.cid = cid;
-           this.did = did;
-           this.reg = reg;
-           this.protoOp = protoOp;
-           this.isMetadataFile = isMetadataFile;
-           this.numVersionToKeep = numVersionToKeep;
+                        DepSkySDataUnit reg, int protoOp, boolean isMetadataFile, int numVersionToKeep) {
+        this.op = op;
+        this.seqNumber = seqNumber;
+        this.cid = cid;
+        this.did = did;
+        this.reg = reg;
+        this.protoOp = protoOp;
+        this.isMetadataFile = isMetadataFile;
+        this.numVersionToKeep = numVersionToKeep;
     }
-    
+
     public CloudRequest(int op, int seqNumber, String cid, String did,
-    		DepSkySDataUnit reg, int protoOp, int invokerId, int lockDuration, String resourceToLock, String[] accessToOtherAccount){
-    	   this.op = op;
-           this.seqNumber = seqNumber;
-           this.cid = cid;
-           this.did = did;
-           this.reg = reg;
-           this.protoOp = protoOp;
-           this.invokerId = invokerId;
-           this.lockDuration = lockDuration;
-           this.resourceToLock = resourceToLock;
-           this.accessToOtherAccount = accessToOtherAccount;
+                        DepSkySDataUnit reg, int protoOp, int invokerId, int lockDuration, String resourceToLock,
+                        String[] accessToOtherAccount) {
+        this.op = op;
+        this.seqNumber = seqNumber;
+        this.cid = cid;
+        this.did = did;
+        this.reg = reg;
+        this.protoOp = protoOp;
+        this.invokerId = invokerId;
+        this.lockDuration = lockDuration;
+        this.resourceToLock = resourceToLock;
+        this.accessToOtherAccount = accessToOtherAccount;
     }
 
     public void setStartTime(long startTime) {

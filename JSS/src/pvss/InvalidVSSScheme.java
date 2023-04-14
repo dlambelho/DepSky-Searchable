@@ -11,13 +11,13 @@
 package pvss;
 
 /**
- *
  * @author neves
  */
 public class InvalidVSSScheme extends Exception {
-    
+
     /**
      * Constructs an instance of <code>InvalidVSSScheme</code> with the specified detail message.
+     *
      * @param msg the detail message.
      */
     public InvalidVSSScheme(String msg) {

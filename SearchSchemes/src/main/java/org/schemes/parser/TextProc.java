@@ -1,15 +1,16 @@
-/** * Copyright (C) 2016 Tarik Moataz
- *
+/**
+ * Copyright (C) 2016 Tarik Moataz
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -19,6 +20,7 @@
 /////////////////////    Text Parsing with a new partitioning technique 	/////////////////////////////
 
 //***********************************************************************************************//
+
 package org.schemes.parser;
 
 import com.google.common.collect.Multimap;
@@ -35,62 +37,62 @@ import javax.crypto.NoSuchPaddingException;
 
 public class TextProc {
 
-	public TextProc(int i) {
+    public TextProc(int i) {
 
-	}
+    }
 
-	public static void TextProc(boolean flag, String pwd)
-			throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-			NoSuchProviderException, NoSuchPaddingException, InvalidKeySpecException {
+    public static void TextProc(boolean flag, String pwd)
+            throws IOException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeySpecException {
 
-		int counter = 0;
-		ArrayList<File> listOfFile = new ArrayList<File>();
+        int counter = 0;
+        ArrayList<File> listOfFile = new ArrayList<File>();
 
-		// ***********************************************************************************************//
+        // ***********************************************************************************************//
 
-		///////////////////// TEXT PARSING and Inverted Index CREATION
-		///////////////////// /////////////////////////////
+        ///////////////////// TEXT PARSING and Inverted Index CREATION
+        ///////////////////// /////////////////////////////
 
-		// ***********************************************************************************************//
+        // ***********************************************************************************************//
 
-		Printer.debugln("\n Beginning of text extraction \n");
+        Printer.debugln("\n Beginning of text extraction \n");
 
-		listf(pwd, listOfFile);
-		try {
-			TextExtractPar.extractTextPar(listOfFile);
-		} catch (InterruptedException | ExecutionException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
+        listf(pwd, listOfFile);
+        try {
+            TextExtractPar.extractTextPar(listOfFile);
+        } catch (InterruptedException | ExecutionException e2) {
+            // TODO Auto-generated catch block
+            e2.printStackTrace();
+        }
 
-		// ***********************************************************************************************//
+        // ***********************************************************************************************//
 
-		///////////////////// Partitioning /////////////////////////////
+        ///////////////////// Partitioning /////////////////////////////
 
-		// ***********************************************************************************************//
-		if (flag) {
-			Multimap<Integer, String> partitions = Partition.partitioning(TextExtractPar.lp1);
-		}
+        // ***********************************************************************************************//
+        if (flag) {
+            Multimap<Integer, String> partitions = Partition.partitioning(TextExtractPar.lp1);
+        }
 
-	}
+    }
 
-	/*
-	 * This method gets all files from a directory. These files, will be
-	 * processed later on to get all the keywords and create an inverted index
-	 * structure
-	 */
-	public static void listf(String directoryName, ArrayList<File> files) {
-		File directory = new File(directoryName);
+    /*
+     * This method gets all files from a directory. These files, will be
+     * processed later on to get all the keywords and create an inverted index
+     * structure
+     */
+    public static void listf(String directoryName, ArrayList<File> files) {
+        File directory = new File(directoryName);
 
-		// get all the files from a directory
-		File[] fList = directory.listFiles();
-		for (File file : fList) {
-			if (file.isFile()) {
-				files.add(file);
-			} else if (file.isDirectory()) {
-				listf(file.getAbsolutePath(), files);
-			}
-		}
-	}
+        // get all the files from a directory
+        File[] fList = directory.listFiles();
+        for (File file : fList) {
+            if (file.isFile()) {
+                files.add(file);
+            } else if (file.isDirectory()) {
+                listf(file.getAbsolutePath(), files);
+            }
+        }
+    }
 
 }

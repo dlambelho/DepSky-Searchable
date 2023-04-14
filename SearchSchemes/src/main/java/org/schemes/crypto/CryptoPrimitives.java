@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -103,7 +104,7 @@ public class CryptoPrimitives {
 
     public static byte[] generateCmac(byte[] key, String msg) throws UnsupportedEncodingException {
         CMac cmac = new CMac(new AESFastEngine());
-        byte[] data = msg.getBytes("UTF-8");
+        byte[] data = msg.getBytes(StandardCharsets.UTF_8);
         byte[] output = new byte[cmac.getMacSize()];
 
         cmac.init(new KeyParameter(key));
@@ -123,7 +124,7 @@ public class CryptoPrimitives {
 
         HMac hmac = new HMac(new SHA256Digest());
         byte[] result = new byte[hmac.getMacSize()];
-        byte[] msgAry = msg.getBytes("UTF-8");
+        byte[] msgAry = msg.getBytes(StandardCharsets.UTF_8);
         hmac.init(new KeyParameter(key));
         hmac.reset();
         hmac.update(msgAry, 0, msgAry.length);
@@ -159,7 +160,7 @@ public class CryptoPrimitives {
 
         HMac hmac = new HMac(new SHA512Digest());
         byte[] result = new byte[hmac.getMacSize()];
-        byte[] msgAry = msg.getBytes("UTF-8");
+        byte[] msgAry = msg.getBytes(StandardCharsets.UTF_8);
         hmac.init(new KeyParameter(key));
         hmac.reset();
         hmac.update(msgAry, 0, msgAry.length);
@@ -217,10 +218,10 @@ public class CryptoPrimitives {
         byte[] hmacOutput = generateHmac(key, randomness);
 
 
-		// transforming String to Bytes
-        byte[] plaintextInBytes = plaintext.getBytes("UTF-8");
+        // transforming String to Bytes
+        byte[] plaintextInBytes = plaintext.getBytes(StandardCharsets.UTF_8);
 
-		//XOR operation
+        //XOR operation
         byte[] xorResult = new byte[32];
 
         int count = 0;
@@ -273,8 +274,7 @@ public class CryptoPrimitives {
             outputInBytes[count] = (byte) (b ^ xorPart[count]);
             count++;
         }
-        String output = new String(outputInBytes, "UTF-8");
-        ;
+        String output = new String(outputInBytes, StandardCharsets.UTF_8);
 
 
         return output;
@@ -379,7 +379,7 @@ public class CryptoPrimitives {
     public static byte[] encryptAES_CBC_String(byte[] keyBytes, byte[] ivBytes, String identifier)
             throws InvalidKeyException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException, NoSuchPaddingException, IOException {
-        return encryptAES_CBC(keyBytes, ivBytes, identifier.getBytes("UTF-8"));
+        return encryptAES_CBC(keyBytes, ivBytes, identifier.getBytes(StandardCharsets.UTF_8));
     }
 
     public static byte[] encryptAES_CBC(byte[] keyBytes, byte[] ivBytes, byte[] input)
@@ -669,7 +669,6 @@ public class CryptoPrimitives {
         // le premier block contient le vecteur d�ntialization
         boolean[][] tmpResults1 = new boolean[plaintext.length + 1][blockSize];
         tmpResults1[0] = new boolean[blockSize];
-        ;
 
         // temporary results 2
         boolean[][] tmpResults2 = new boolean[plaintext.length][blockSize];
@@ -736,7 +735,6 @@ public class CryptoPrimitives {
         // le premier block contient le vecteur d�ntialization
         byte[][] tmpResults1 = new byte[plaintext.length + 1][blockSize];
         tmpResults1[0] = new byte[blockSize];
-        ;
 
         // temporary results 2
         byte[][] tmpResults2 = new byte[plaintext.length][blockSize];
@@ -757,9 +755,9 @@ public class CryptoPrimitives {
             byte[] hmac = CryptoPrimitives.generateHmac(keyHash, tmpResults1[i]);
 
             int j = 0;
-			for (byte b : hmac) {
-				tmpResults2[i][j] = (byte) (b ^ blocks[i][j++]);
-			}
+            for (byte b : hmac) {
+                tmpResults2[i][j] = (byte) (b ^ blocks[i][j++]);
+            }
 
             results[i] = CryptoPrimitives.generateHmac(keyHash2, tmpResults2[i]);
             tmpResults1[i + 1] = results[i];
@@ -783,10 +781,10 @@ public class CryptoPrimitives {
 
         (new File(dirName)).mkdir();
         try {
-			try (OutputStream output = new BufferedOutputStream(
-					new FileOutputStream(dirName + "/" + aOutputFileName))) {
-				output.write(aInput);
-			}
+            try (OutputStream output = new BufferedOutputStream(
+                    new FileOutputStream(dirName + "/" + aOutputFileName))) {
+                output.write(aInput);
+            }
         } catch (FileNotFoundException ex) {
             Printer.normalln("File not found.");
         } catch (IOException ex) {
@@ -812,17 +810,17 @@ public class CryptoPrimitives {
         byte[] bucket = new byte[32 * 1024];
         ByteArrayOutputStream result = null;
         try {
-			try (aInput) {
+            try (aInput) {
 
-				result = new ByteArrayOutputStream(bucket.length);
-				int bytesRead = 0;
-				while (bytesRead != -1) {
-					bytesRead = aInput.read(bucket);
-					if (bytesRead > 0) {
-						result.write(bucket, 0, bytesRead);
-					}
-				}
-			}
+                result = new ByteArrayOutputStream(bucket.length);
+                int bytesRead = 0;
+                while (bytesRead != -1) {
+                    bytesRead = aInput.read(bucket);
+                    if (bytesRead > 0) {
+                        result.write(bucket, 0, bytesRead);
+                    }
+                }
+            }
         } catch (IOException ex) {
             Printer.debugln(String.valueOf(ex));
         }
@@ -859,7 +857,7 @@ public class CryptoPrimitives {
         int[] bitArray = getBits(byteArray, numberOfBits);
 
         for (int i = 0; i < numberOfBits; i++) {
-            result = result + (int) bitArray[i] * (int) Math.pow(2, i);
+            result = result + bitArray[i] * (int) Math.pow(2, i);
         }
         return result;
     }
@@ -869,7 +867,7 @@ public class CryptoPrimitives {
         int[] bitArray = getBits(byteArray, numberOfBits);
 
         for (int i = 0; i < numberOfBits; i++) {
-            result = result + bitArray[i] * (int) Math.pow(2, i);
+            result = result + (long) bitArray[i] * (int) Math.pow(2, i);
         }
         return result;
     }
@@ -902,7 +900,7 @@ public class CryptoPrimitives {
         String result = "";
         for (int i = 0; i < message.length; i++) {
 
-            if (message[i] == true) {
+            if (message[i]) {
                 result = result + 1;
 
             } else {
@@ -930,9 +928,9 @@ public class CryptoPrimitives {
     public static boolean[] bytesToBoolean(byte[] bytes) {
         boolean[] bits = new boolean[bytes.length * 8];
         for (int i = 0; i < bytes.length * 8; i++) {
-			if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0) {
-				bits[i] = true;
-			}
+            if ((bytes[i / 8] & (1 << (7 - (i % 8)))) > 0) {
+                bits[i] = true;
+            }
         }
         return bits;
     }

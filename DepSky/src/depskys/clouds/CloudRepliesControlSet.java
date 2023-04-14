@@ -4,7 +4,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 
 /**
- *
  * @author koras
  */
 public class CloudRepliesControlSet {

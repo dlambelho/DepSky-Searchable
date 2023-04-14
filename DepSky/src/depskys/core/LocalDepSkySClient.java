@@ -54,24 +54,22 @@ import util.Pair;
 public class LocalDepSkySClient implements IDepSkySProtocol {
 
     private static final int LOCK_AVAILABLE = 0, LOCK_UNVAILABLE = 1, RENEW = 2;
-
-    /**
-     * @param args
-     */
-    private int clientId;
     public int N, F, T = 2/*jss_shares=f+1*/, NUM_BITS = 192;
-    private int sequence = -1;
-    private IDepSkySDriver cloud1, cloud2, cloud3, cloud4;
-    private IDepSkySDriver[] drivers;
-    private DepSkySManager manager;
     public HashMap<Integer, CloudRepliesControlSet> replies;
     public boolean parallelRequests = false;    //Optimized Read or Normal Read
-
     public List<CloudReply> lastReadReplies; //pointer for planet lab stats
     public List<CloudReply> lastMetadataReplies; //pointer for planet lab stats
     public int lastReadMetadataSequence = -1, lastReadRepliesMaxVerIdx = -1;
     public boolean sentOne = false;
     public byte[] testData = null;
+    /**
+     * @param args
+     */
+    private int clientId;
+    private int sequence = -1;
+    private IDepSkySDriver cloud1, cloud2, cloud3, cloud4;
+    private IDepSkySDriver[] drivers;
+    private DepSkySManager manager;
     private byte[] response = null;
     private ReedSolDecoder decoder;
     private ReedSolEncoder encoder;
@@ -146,6 +144,195 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
     //		}
     //	}
 
+    public static void main(String[] args) throws IOException, NumberFormatException, StorageCloudException {
+        if (new Integer(args[0]) <= 6 && new Integer(args[0]) >= 0 &&
+                new Integer(args[1]) <= 3 && new Integer(args[1]) >= 0 &&
+                new Integer(args[2]) <= 1 && new Integer(args[2]) >= 0) {
+
+            System.out.println("USAGE:  commands             function");
+            System.out.println("       pick_du 'name' - change the container");
+            System.out.println("       write 'data'   - write a new version in the selected container");
+            System.out.println("       read           - read the last version of the selected container");
+            System.out.println("       delete         - delete all the files in the selected container");
+            System.out.println("       read_m 'num'   - read old versions. If 'num' = 0 read the last version");
+            System.out.println();
+            boolean useClouds = true;
+            if (new Integer(args[2]) == 1) {
+                useClouds = false;
+            }
+
+            LocalDepSkySClient localDS = new LocalDepSkySClient(new Integer(args[0]), useClouds);
+            DepSkySDataUnit dataU = null;
+            int protocol_mode = 0;
+            if (args[1].equals("1")) {
+                protocol_mode = 1;
+            } else if (args[1].equals("2")) {
+                protocol_mode = 2;
+            } else if (args[1].equals("3")) {
+                protocol_mode = 3;
+            }
+
+            boolean terminate = false;
+            Scanner in = new Scanner(System.in);
+            String input;
+            byte[] rdata;
+            HashMap<String, LinkedList<byte[]>> map = new HashMap<String, LinkedList<byte[]>>();
+            while (!terminate) {
+                System.out.print("> ");
+                input = in.nextLine();
+                if (input.equals("exit")) {
+                    terminate = true;
+                } else if (input.length() > 7 && input.substring(0, 7).equals("pick_du") &&
+                        input.split(" ").length > 0) {
+                    StringBuilder sb = new StringBuilder(input.substring(8));
+                    dataU = new DepSkySDataUnit(sb.toString(), sb.toString());
+                    if (protocol_mode == 1) {
+                        dataU.setUsingPVSS(true);
+                    } else if (protocol_mode == 2) {
+                        dataU.setUsingErsCodes(true);
+                    } else if (protocol_mode == 3) {
+                        dataU.setUsingSecSharing(true);
+                    }
+                    if (!map.containsKey(sb.toString())) {
+                        LinkedList<byte[]> hashs = new LinkedList<byte[]>();
+                        map.put(sb.toString(), hashs);
+                    }
+                    System.out.println("DataUnit '" + sb.toString() + "' selected!");
+                } else if (input.equals("build_index")) {
+                    System.out.println("BUILDING THE INDEX FOR SEARCHES");
+//                    List<byte[]> keys = BXTSearch.setup();
+//                    System.out.println("WRITING: INDEX");
+//                    StringBuilder builder = new StringBuilder();
+//                    for(byte[] key : keys) {
+//                        builder.append(new String(Base64.getEncoder().encode(key)));
+//                        builder.append("\n");
+//                    }
+//
+//                    byte[] value = null;
+//                    value = builder.toString().getBytes();
+//
+//                    try {
+//                        dataU = new DepSkySDataUnit("index", "Index");
+//                        long acMil = System.currentTimeMillis();
+//                        byte[] hash = localDS.write(dataU, value);
+//                        LinkedList<byte[]> current = map.get(dataU.getRegId());
+//                        current.addFirst(hash);
+//                        map.put(dataU.getRegId(), current);
+//                        long tempo = System.currentTimeMillis() - acMil;
+//                        System.out.println("I'm finished writing -> " + Long.toString(tempo) + " milis");
+//                    } catch (Exception ex) {
+//                        ex.printStackTrace();
+//                    }
+                } else if (input.equals("list_all")) {
+                    System.out.println("LISTING ALL OF THE EXISTING BUCKETS");
+                    LinkedList<LinkedList<String>> bucketsList = localDS.listBuckets();
+                    for (LinkedList<String> list : bucketsList) {
+                        for (String bucket : list) {
+                            System.out.println(bucket);
+                        }
+                        System.out.println(
+                                "----------------------------------------------------------------");
+                    }
+                } else {
+                    if (dataU != null) {
+                        if (input.equals("list")) {
+                            System.out.println("LISTING CONTAINER");
+                            try {
+                                LinkedList<LinkedList<String>> fileList = localDS.listQuorum(dataU, "");
+                                System.out.println("RESULT:");
+                                for (LinkedList<String> list : fileList) {
+                                    for (String file : list) {
+                                        System.out.println(file);
+                                    }
+                                    System.out.println(
+                                            "----------------------------------------------------------------");
+                                }
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else if (input.equals("delete")) {
+                            try {
+                                localDS.deleteContainer(dataU);
+                                System.out.println("I'm finished delete");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else if (input.equals("read")) {
+                            System.out.println("I'm reading");
+                            try {
+                                dataU.clearAllCaches();
+                                long acMil = System.currentTimeMillis();
+                                rdata = localDS.read(dataU);
+                                long tempo = System.currentTimeMillis() - acMil;
+                                System.out.println("I'm finished read -> " + Long.toString(tempo) + " milis");
+                                if (rdata != null) {
+                                    System.out.println("READ RESULT = " + new String(rdata));
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+
+                        } else if (input.substring(0, 5).equals("write") && input.split(" ").length > 0) {
+                            StringBuilder sb = new StringBuilder(input.substring(6));
+                            System.out.println("WRITING: " + sb);
+                            File file = new File(sb.toString());
+                            byte[] value = null;
+                            if (file.exists()) {
+                                FileInputStream reader;
+                                try {
+                                    reader = new FileInputStream(file);
+                                    value = IOUtils.toByteArray(reader);
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                value = sb.toString().getBytes();
+                            }
+                            try {
+                                long acMil = System.currentTimeMillis();
+                                byte[] hash = localDS.write(dataU, value);
+                                LinkedList<byte[]> current = map.get(dataU.getRegId());
+                                current.addFirst(hash);
+                                map.put(dataU.getRegId(), current);
+                                long tempo = System.currentTimeMillis() - acMil;
+                                System.out.println("I'm finished write -> " + Long.toString(tempo) + " milis");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        } else if (input.substring(0, 6).equals("read_m") && input.split(" ").length > 0) {
+                            StringBuilder sb = new StringBuilder(input.substring(7));
+                            int ver = new Integer(sb.toString());
+                            System.out.println("I'm reading");
+                            try {
+                                dataU.clearAllCaches();
+                                long acMil = System.currentTimeMillis();
+                                LinkedList<byte[]> current = map.get(dataU.getRegId());
+                                rdata = localDS.readMatching(dataU, current.get(ver));
+                                long tempo = System.currentTimeMillis() - acMil;
+                                System.out.println("I'm finished read -> " + Long.toString(tempo) + " milis");
+                                if (rdata != null) {
+                                    System.out.println("READ RESULT = " + new String(rdata));
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+
+                        } else {
+                            System.out.println("Invalid Comand!");
+                        }
+                    } else {
+                        System.out.println("You need do pick a container to use. use the command pick_du.");
+                    }
+                }
+            }
+            in.close();
+        } else {
+            System.out.println("Invalid arguments!");
+            System.out.println("Please see the documentation at https://code.google.com/p/depsky/wiki/DepSky.");
+        }
+    }
 
     /**
      * @param clientId - client ID
@@ -299,7 +486,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
     public synchronized byte[] read(DepSkySDataUnit reg) throws Exception {
         return read(reg, null);
     }
-
 
     /**
      * Read the last version written for the file associated with reg
@@ -462,6 +648,13 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         return write(reg, value, null);
     }
 
+//    public synchronized List<byte[]> buildIndex() {
+//
+//        listQuorum();
+//
+//        return null;
+//    }
+
     public synchronized byte[] write(DepSkySDataUnit reg, byte[] value,
                                      LinkedList<Pair<String, String[]>> uploadToAnotherAccountKeys) throws Exception {
 
@@ -534,13 +727,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
 
     }
-
-//    public synchronized List<byte[]> buildIndex() {
-//
-//        listQuorum();
-//
-//        return null;
-//    }
 
     public LinkedList<LinkedList<String>> listBuckets() {
         CloudRepliesControlSet rcs = null;
@@ -716,7 +902,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         deleteData(reg, name);
     }
 
-
     /**
      * Method that releases (when receive N-F replies (in most of the cases)) all the locks made by
      * broadcasts
@@ -849,7 +1034,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
 
     }
 
-
     public boolean sendingParallelRequests() {
         return parallelRequests;
     }
@@ -871,7 +1055,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
     }
 
-
     private void broadcastGarbageCollection(int sequence, DepSkySDataUnit reg, int protoOp, int numVersionToKeep)
             throws StorageCloudException {
 
@@ -888,7 +1071,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
 
     }
-
 
     /**
      * Start all connections with the clouds (this operations only get success if all the four
@@ -967,7 +1149,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
 
         return decode;
     }
-
 
     /**
      * @return the identifier for the next broadcast
@@ -1195,7 +1376,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
         throw new StorageCloudException("Unknown driver implementation.");
     }
-
 
     private void broadcastSetContainersACL(int sequence, DepSkySDataUnit reg, int protoOp, long version,
                                            String permission, LinkedList<Pair<String, String[]>> cannonicalIds)
@@ -1587,195 +1767,5 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         list.add(array);
         sc.close();
         return list;
-    }
-
-
-    public static void main(String[] args) throws IOException, NumberFormatException, StorageCloudException {
-        if (new Integer(args[0]) <= 6 && new Integer(args[0]) >= 0 &&
-                new Integer(args[1]) <= 3 && new Integer(args[1]) >= 0 &&
-                new Integer(args[2]) <= 1 && new Integer(args[2]) >= 0) {
-
-            System.out.println("USAGE:  commands             function");
-            System.out.println("       pick_du 'name' - change the container");
-            System.out.println("       write 'data'   - write a new version in the selected container");
-            System.out.println("       read           - read the last version of the selected container");
-            System.out.println("       delete         - delete all the files in the selected container");
-            System.out.println("       read_m 'num'   - read old versions. If 'num' = 0 read the last version");
-            System.out.println();
-            boolean useClouds = true;
-            if (new Integer(args[2]) == 1) {
-                useClouds = false;
-            }
-
-            LocalDepSkySClient localDS = new LocalDepSkySClient(new Integer(args[0]), useClouds);
-            DepSkySDataUnit dataU = null;
-            int protocol_mode = 0;
-            if (args[1].equals("1")) {
-                protocol_mode = 1;
-            } else if (args[1].equals("2")) {
-                protocol_mode = 2;
-            } else if (args[1].equals("3")) {
-                protocol_mode = 3;
-            }
-
-            boolean terminate = false;
-            Scanner in = new Scanner(System.in);
-            String input;
-            byte[] rdata;
-            HashMap<String, LinkedList<byte[]>> map = new HashMap<String, LinkedList<byte[]>>();
-            while (!terminate) {
-                System.out.print("> ");
-                input = in.nextLine();
-                if (input.equals("exit")) {
-                    terminate = true;
-                } else if (input.length() > 7 && input.substring(0, 7).equals("pick_du") && input.split(" ").length > 0) {
-                    StringBuilder sb = new StringBuilder(input.substring(8));
-                    dataU = new DepSkySDataUnit(sb.toString(), sb.toString());
-                    if (protocol_mode == 1) {
-                        dataU.setUsingPVSS(true);
-                    } else if (protocol_mode == 2) {
-                        dataU.setUsingErsCodes(true);
-                    } else if (protocol_mode == 3) {
-                        dataU.setUsingSecSharing(true);
-                    }
-                    if (!map.containsKey(sb.toString())) {
-                        LinkedList<byte[]> hashs = new LinkedList<byte[]>();
-                        map.put(sb.toString(), hashs);
-                    }
-                    System.out.println("DataUnit '" + sb.toString() + "' selected!");
-                } else if (input.equals("build_index")) {
-                    System.out.println("BUILDING THE INDEX FOR SEARCHES");
-//                    List<byte[]> keys = BXTSearch.setup();
-//                    System.out.println("WRITING: INDEX");
-//                    StringBuilder builder = new StringBuilder();
-//                    for(byte[] key : keys) {
-//                        builder.append(new String(Base64.getEncoder().encode(key)));
-//                        builder.append("\n");
-//                    }
-//
-//                    byte[] value = null;
-//                    value = builder.toString().getBytes();
-//
-//                    try {
-//                        dataU = new DepSkySDataUnit("index", "Index");
-//                        long acMil = System.currentTimeMillis();
-//                        byte[] hash = localDS.write(dataU, value);
-//                        LinkedList<byte[]> current = map.get(dataU.getRegId());
-//                        current.addFirst(hash);
-//                        map.put(dataU.getRegId(), current);
-//                        long tempo = System.currentTimeMillis() - acMil;
-//                        System.out.println("I'm finished writing -> " + Long.toString(tempo) + " milis");
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                    }
-                } else if (input.equals("list_all")) {
-                    System.out.println("LISTING ALL OF THE EXISTING BUCKETS");
-                    LinkedList<LinkedList<String>> bucketsList = localDS.listBuckets();
-                    for (LinkedList<String> list : bucketsList) {
-                        for (String bucket : list) {
-                            System.out.println(bucket);
-                        }
-                        System.out.println(
-                                "----------------------------------------------------------------");
-                    }
-                } else {
-                    if (dataU != null) {
-                        if (input.equals("list")) {
-                            System.out.println("LISTING CONTAINER");
-                            try {
-                                LinkedList<LinkedList<String>> fileList = localDS.listQuorum(dataU, "");
-                                System.out.println("RESULT:");
-                                for (LinkedList<String> list : fileList) {
-                                    for (String file : list) {
-                                        System.out.println(file);
-                                    }
-                                    System.out.println(
-                                            "----------------------------------------------------------------");
-                                }
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        } else if (input.equals("delete")) {
-                            try {
-                                localDS.deleteContainer(dataU);
-                                System.out.println("I'm finished delete");
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        } else if (input.equals("read")) {
-                            System.out.println("I'm reading");
-                            try {
-                                dataU.clearAllCaches();
-                                long acMil = System.currentTimeMillis();
-                                rdata = localDS.read(dataU);
-                                long tempo = System.currentTimeMillis() - acMil;
-                                System.out.println("I'm finished read -> " + Long.toString(tempo) + " milis");
-                                if (rdata != null) {
-                                    System.out.println("READ RESULT = " + new String(rdata));
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-
-                        } else if (input.substring(0, 5).equals("write") && input.split(" ").length > 0) {
-                            StringBuilder sb = new StringBuilder(input.substring(6));
-                            System.out.println("WRITING: " + sb);
-                            File file = new File(sb.toString());
-                            byte[] value = null;
-                            if (file.exists()) {
-                                FileInputStream reader;
-                                try {
-                                    reader = new FileInputStream(file);
-                                    value = IOUtils.toByteArray(reader);
-                                } catch (FileNotFoundException e) {
-                                    e.printStackTrace();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            } else {
-                                value = sb.toString().getBytes();
-                            }
-                            try {
-                                long acMil = System.currentTimeMillis();
-                                byte[] hash = localDS.write(dataU, value);
-                                LinkedList<byte[]> current = map.get(dataU.getRegId());
-                                current.addFirst(hash);
-                                map.put(dataU.getRegId(), current);
-                                long tempo = System.currentTimeMillis() - acMil;
-                                System.out.println("I'm finished write -> " + Long.toString(tempo) + " milis");
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-                        } else if (input.substring(0, 6).equals("read_m") && input.split(" ").length > 0) {
-                            StringBuilder sb = new StringBuilder(input.substring(7));
-                            int ver = new Integer(sb.toString());
-                            System.out.println("I'm reading");
-                            try {
-                                dataU.clearAllCaches();
-                                long acMil = System.currentTimeMillis();
-                                LinkedList<byte[]> current = map.get(dataU.getRegId());
-                                rdata = localDS.readMatching(dataU, current.get(ver));
-                                long tempo = System.currentTimeMillis() - acMil;
-                                System.out.println("I'm finished read -> " + Long.toString(tempo) + " milis");
-                                if (rdata != null) {
-                                    System.out.println("READ RESULT = " + new String(rdata));
-                                }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                            }
-
-                        } else {
-                            System.out.println("Invalid Comand!");
-                        }
-                    } else {
-                        System.out.println("You need do pick a container to use. use the command pick_du.");
-                    }
-                }
-            }
-            in.close();
-        } else {
-            System.out.println("Invalid arguments!");
-            System.out.println("Please see the documentation at https://code.google.com/p/depsky/wiki/DepSky.");
-        }
     }
 }

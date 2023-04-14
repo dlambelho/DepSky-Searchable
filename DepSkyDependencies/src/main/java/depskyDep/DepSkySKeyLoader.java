@@ -17,7 +17,9 @@ public class DepSkySKeyLoader {
     private PublicKey[] pubKeys;
     private PrivateKey prk;
 
-    /** Creates a new instance of AQSKeyLoader */
+    /**
+     * Creates a new instance of AQSKeyLoader
+     */
     public DepSkySKeyLoader(String configHome) {
         if (configHome == null || configHome.equals("")) {
             path = "config" + System.getProperty("file.separator") + "keysDepSky"
@@ -36,6 +38,7 @@ public class DepSkySKeyLoader {
      */
     /**
      * Load the public keys from the writer 0 to until
+     *
      * @param until
      * @return an array of public keys loaded
      * @throws Exception problems reading or parsing the keys
@@ -50,7 +53,7 @@ public class DepSkySKeyLoader {
         return pubKeys;
     }
 
-    /**     
+    /**
      * Loads the public key of some processes from configuration files
      *
      * @param id the id of the process that we want to load the public key

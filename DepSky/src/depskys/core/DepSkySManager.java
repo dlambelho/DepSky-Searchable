@@ -39,6 +39,13 @@ public class DepSkySManager implements ICloudDataManager {
     public static final int LOCK_PROTO = 4;
     public static final int GC_PROTO = 5;
     public static final String CRLF = "\r\n";
+    //base16 char table (aux in getHexString)
+    private static final byte[] HEX_CHAR_TABLE = {
+            (byte) '0', (byte) '1', (byte) '2', (byte) '3',
+            (byte) '4', (byte) '5', (byte) '6', (byte) '7',
+            (byte) '8', (byte) '9', (byte) 'a', (byte) 'b',
+            (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f'
+    };
     public DepSkySCloudManager[] driversManagers;
     public DepSkySKeyLoader keyLoader;
     public /*IDepSkySProtocol*/ LocalDepSkySClient depskys;
@@ -58,6 +65,18 @@ public class DepSkySManager implements ICloudDataManager {
         cloud4 = new ConcurrentHashMap<String, LinkedList<DepSkyMetadata>>();
 
         init(drivers);
+    }
+
+    private static String getHexString(byte[] raw)
+            throws UnsupportedEncodingException {
+        byte[] hex = new byte[2 * raw.length];
+        int index = 0;
+        for (byte b : raw) {
+            int v = b & 0xFF;
+            hex[index++] = HEX_CHAR_TABLE[v >>> 4];
+            hex[index++] = HEX_CHAR_TABLE[v & 0xF];
+        }
+        return new String(hex, "ASCII");
     }
 
     private void init(IDepSkySDriver[] drivers) {
@@ -140,9 +159,9 @@ public class DepSkySManager implements ICloudDataManager {
                 String[] namesToDelete = new String[allmetadata.size() - metadataReply.numVersionToKeep];
                 int j = 0;
                 for (int i = allmetadata.size() - 1; i >= 0; i--) {
-					if (i >= metadataReply.numVersionToKeep) {
-						namesToDelete[j] = allmetadata.get(i).getVersionFileId();
-					}
+                    if (i >= metadataReply.numVersionToKeep) {
+                        namesToDelete[j] = allmetadata.get(i).getVersionFileId();
+                    }
                     j++;
                 }
                 for (String a : namesToDelete) {
@@ -171,9 +190,9 @@ public class DepSkySManager implements ICloudDataManager {
                         cont = allmetadata.size() + 1;
                     }
                 }
-				if (cont < allmetadata.size() + 1) {
-					throw new Exception("no matching version available");
-				}
+                if (cont < allmetadata.size() + 1) {
+                    throw new Exception("no matching version available");
+                }
             } else { //if is a normal read (last version read)
                 dm = allmetadata.getFirst();
                 datareplied = dm.getMetadata();
@@ -249,21 +268,21 @@ public class DepSkySManager implements ICloudDataManager {
                 } else if (metadataReply.cloudId.equals("cloud4")) {
                     cloud4.put(metadataReply.container, allmetadata);
                 }
-				//				if (metadataReply.sequence < 0) {
-				//					//System.out.println("read metadata, now sending write value...");
-				//					DepSkySCloudManager manager = getDriverManagerByDriverId(metadataReply.cloudId);
-				//					CloudRequest r = new CloudRequest(DepSkySCloudManager.NEW_DATA,
-				//							metadataReply.sequence, manager.driver.getSessionKey(),
-				//							metadataReply.container,
-				//							metadataReply.reg.getGivenVersionValueDataFileName(ts + ""),
-				//							depskys.testData, null,
-				//							metadataReply.reg, metadataReply.protoOp, false,
-				//							ts + "", verHash, metadataReply.allDataHash);
-				//					r.setStartTime(metadataReply.startTime);
-				//					r.setMetadataReceiveTime(metadataReply.metadataReceiveTime);
-				//					manager.doRequest(r);//request valuedata file
-				//					return;
-				//				}
+                //				if (metadataReply.sequence < 0) {
+                //					//System.out.println("read metadata, now sending write value...");
+                //					DepSkySCloudManager manager = getDriverManagerByDriverId(metadataReply.cloudId);
+                //					CloudRequest r = new CloudRequest(DepSkySCloudManager.NEW_DATA,
+                //							metadataReply.sequence, manager.driver.getSessionKey(),
+                //							metadataReply.container,
+                //							metadataReply.reg.getGivenVersionValueDataFileName(ts + ""),
+                //							depskys.testData, null,
+                //							metadataReply.reg, metadataReply.protoOp, false,
+                //							ts + "", verHash, metadataReply.allDataHash);
+                //					r.setStartTime(metadataReply.startTime);
+                //					r.setMetadataReceiveTime(metadataReply.metadataReceiveTime);
+                //					manager.doRequest(r);//request valuedata file
+                //					return;
+                //				}
                 depskys.dataReceived(metadataReply);
                 return;
             }
@@ -528,26 +547,6 @@ public class DepSkySManager implements ICloudDataManager {
     private byte[] getHash(byte[] v) throws NoSuchAlgorithmException {
         //MessageDigest md = MessageDigest.getInstance("SHA-1");
         return MessageDigest.getInstance("SHA-1").digest(v);
-    }
-
-    //base16 char table (aux in getHexString)
-    private static final byte[] HEX_CHAR_TABLE = {
-            (byte) '0', (byte) '1', (byte) '2', (byte) '3',
-            (byte) '4', (byte) '5', (byte) '6', (byte) '7',
-            (byte) '8', (byte) '9', (byte) 'a', (byte) 'b',
-            (byte) 'c', (byte) 'd', (byte) 'e', (byte) 'f'
-    };
-
-    private static String getHexString(byte[] raw)
-            throws UnsupportedEncodingException {
-        byte[] hex = new byte[2 * raw.length];
-        int index = 0;
-        for (byte b : raw) {
-            int v = b & 0xFF;
-            hex[index++] = HEX_CHAR_TABLE[v >>> 4];
-            hex[index++] = HEX_CHAR_TABLE[v & 0xF];
-        }
-        return new String(hex, "ASCII");
     }
 
     public void doRequest(String cloudId, CloudRequest request) {

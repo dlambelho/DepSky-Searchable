@@ -1,9 +1,9 @@
 package exceptions;
 
-public class ServiceSiteException extends StorageCloudException{
+public class ServiceSiteException extends StorageCloudException {
 
-	   public ServiceSiteException(String message) {
-	        super(message);
-	    }
-	
+    public ServiceSiteException(String message) {
+        super(message);
+    }
+
 }

@@ -4,6 +4,7 @@ import depskys.clouds.CloudReply;
 
 /**
  * Interface for depskys read/write protocol
+ *
  * @author bruno
  */
 public interface IDepSkySProtocol {

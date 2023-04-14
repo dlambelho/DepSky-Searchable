@@ -1,15 +1,16 @@
-/** * Copyright (C) 2016 Tarik Moataz
- *
+/**
+ * Copyright (C) 2016 Tarik Moataz
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -17,12 +18,13 @@
 /*Partitioning decreases the size of the inverted index.
  * Avoid using the partitioning method if the gain will
  * be small or null
- * 
- * This technique is first introduced to gain space but 
+ *
+ * This technique is first introduced to gain space but
  * not enabled by default, and is still
  * under more research investigation.
- * 
+ *
  */
+
 package org.schemes.parser;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -35,81 +37,81 @@ import java.util.Set;
 
 public class Partition {
 
-	private Partition() {
-	}
+    private Partition() {
+    }
 
-	public static Multimap<Integer, String> partitioning(Multimap<String, String> lookup) {
+    public static Multimap<Integer, String> partitioning(Multimap<String, String> lookup) {
 
-		// Partitions Creation
-		Set<String> keys = lookup.keySet();
+        // Partitions Creation
+        Set<String> keys = lookup.keySet();
 
-		int partitionId = 0;
-		Multimap<Integer, String> partitions = ArrayListMultimap.create();
-		int counter2 = 0;
+        int partitionId = 0;
+        Multimap<Integer, String> partitions = ArrayListMultimap.create();
+        int counter2 = 0;
 
-		for (String key : keys) {
-			Set<Integer> keys2 = partitions.keySet();
-			List<String> inter = (List<String>) lookup.get(key);
-			List<String> interTMP = new ArrayList<String>(inter);
+        for (String key : keys) {
+            Set<Integer> keys2 = partitions.keySet();
+            List<String> inter = (List<String>) lookup.get(key);
+            List<String> interTMP = new ArrayList<String>(inter);
 
-			Printer.debugln("Step number: " + counter2++ + "Number of keywords " + keys.size());
+            Printer.debugln("Step number: " + counter2++ + "Number of keywords " + keys.size());
 
-			Set<String> set = new HashSet<String>(interTMP);
-			Multimap<Integer, String> partitionsTMP = ArrayListMultimap.create();
+            Set<String> set = new HashSet<String>(interTMP);
+            Multimap<Integer, String> partitionsTMP = ArrayListMultimap.create();
 
-			for (Integer key2 : keys2) {
+            for (Integer key2 : keys2) {
 
-				if (!set.isEmpty()) {
-					Set<String> tmp = new HashSet<String>(partitions.get(key2));
+                if (!set.isEmpty()) {
+                    Set<String> tmp = new HashSet<String>(partitions.get(key2));
 
-					Set<String> intersection = Sets.intersection(tmp, set);
+                    Set<String> intersection = Sets.intersection(tmp, set);
 
-					Set<String> difference;
+                    Set<String> difference;
 
-					if (intersection.isEmpty()) {
-						difference = tmp;
-					} else {
-						difference = Sets.difference(tmp, intersection);
-						set = Sets.difference(set, intersection);
+                    if (intersection.isEmpty()) {
+                        difference = tmp;
+                    } else {
+                        difference = Sets.difference(tmp, intersection);
+                        set = Sets.difference(set, intersection);
 
-					}
+                    }
 
-					if (!difference.isEmpty()) {
-						partitionId = partitionId + 1;
-						partitionsTMP.putAll(partitionId, difference);
-					}
+                    if (!difference.isEmpty()) {
+                        partitionId = partitionId + 1;
+                        partitionsTMP.putAll(partitionId, difference);
+                    }
 
-					if (!intersection.isEmpty()) {
-						partitionId = partitionId + 1;
-						partitionsTMP.putAll(partitionId, intersection);
-					}
+                    if (!intersection.isEmpty()) {
+                        partitionId = partitionId + 1;
+                        partitionsTMP.putAll(partitionId, intersection);
+                    }
 
-				} else {
-					partitionId = partitionId + 1;
-					partitionsTMP.putAll(partitionId, new HashSet<String>(partitions.get(key2)));
-				}
+                } else {
+                    partitionId = partitionId + 1;
+                    partitionsTMP.putAll(partitionId, new HashSet<String>(partitions.get(key2)));
+                }
 
-			}
+            }
 
-			interTMP = new ArrayList<String>(set);
+            interTMP = new ArrayList<String>(set);
 
-			if (!interTMP.isEmpty()) {
+            if (!interTMP.isEmpty()) {
 
-				partitionId = partitionId + 1;
-				partitionsTMP.putAll(partitionId, interTMP);
+                partitionId = partitionId + 1;
+                partitionsTMP.putAll(partitionId, interTMP);
 
-			}
+            }
 
-			partitions = ArrayListMultimap.create(partitionsTMP);
-			partitionsTMP.clear();
-			interTMP.clear();
+            partitions = ArrayListMultimap.create(partitionsTMP);
+            partitionsTMP.clear();
+            interTMP.clear();
 
-		}
+        }
 
-		Printer.debugln("Partitions size " + partitions.keySet().size());
-		Printer.debugln("\n");
+        Printer.debugln("Partitions size " + partitions.keySet().size());
+        Printer.debugln("\n");
 
-		return partitions;
-	}
+        return partitions;
+    }
 
 }
