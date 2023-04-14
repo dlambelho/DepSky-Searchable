@@ -1,6 +1,7 @@
 package amazon;
 
 
+import com.amazonaws.services.s3.model.Bucket;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -47,8 +49,8 @@ public class AmazonS3Driver implements IDepSkySDriver{
 	private Region region = null;
 
 	/**
-	 * Class that interact directly with amazon s3 api 
-	 * 
+	 * Class that interact directly with amazon s3 api
+	 *
 	 * @author tiago oliveira
 	 *
 	 */
@@ -96,8 +98,8 @@ public class AmazonS3Driver implements IDepSkySDriver{
 					+ "secretKey = " + secretKey;
 			PropertiesCredentials b = new PropertiesCredentials( new ByteArrayInputStream(mprops.getBytes()));
 
-			conn = new AmazonS3Client(b);		
-			conn.setEndpoint("http://s3.amazonaws.com"); //Para virtual Box funcionar
+			conn = new AmazonS3Client(b);
+			conn.setEndpoint("http://127.0.0.1:9000"); //Para virtual Box funcionar
 
 			if(!conn.doesBucketExist(defaultBucketName)){
 				conn.createBucket(defaultBucketName, region);
@@ -132,9 +134,9 @@ public class AmazonS3Driver implements IDepSkySDriver{
 					for(int i = 0; i < canonicalIDs.length; i++){
 						acl.grantPermission(new CanonicalGrantee(canonicalIDs[i]), Permission.Read);
 					}
-					conn.putObject(new PutObjectRequest(bucketName, fileId, in, metadata).withAccessControlList(acl));	
+					conn.putObject(new PutObjectRequest(bucketName, fileId, in, metadata).withAccessControlList(acl));
 				}else{
-					conn.putObject(new PutObjectRequest(bucketName, fileId, in, metadata));	
+					conn.putObject(new PutObjectRequest(bucketName, fileId, in, metadata));
 				}
 			}else{
 				conn.putObject(new PutObjectRequest(defaultBucketName, fileId, in, metadata));
@@ -202,11 +204,11 @@ public class AmazonS3Driver implements IDepSkySDriver{
 			ObjectListing objectListing = null;
 			if(bucketName == null)
 				objectListing = conn.listObjects(new ListObjectsRequest()
-				.withBucketName(defaultBucketName).withPrefix(prefix));
+						.withBucketName(defaultBucketName).withPrefix(prefix));
 			else{
 				bucketName = bucketName.concat(location);
 				objectListing = conn.listObjects(new ListObjectsRequest()
-				.withBucketName(bucketName).withPrefix(prefix));
+						.withBucketName(bucketName).withPrefix(prefix));
 			}
 			for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
 				find.add(objectSummary.getKey());
@@ -220,9 +222,21 @@ public class AmazonS3Driver implements IDepSkySDriver{
 		return find;
 	}
 
+	@Override
+	public LinkedList<String> listDataUnits() {
+		LinkedList<String> results = new LinkedList<>();
+		List<Bucket> buckets = conn.listBuckets();
+
+		for (Bucket bucket : buckets) {
+			results.add(bucket.getName());
+		}
+
+		return results;
+	}
+
 	public boolean deleteContainer(String bucketName, String[] namesToDelete, String[] canonicalIDs) throws StorageCloudException {
 		String container = bucketName == null ? defaultBucketName : bucketName.concat(location);
-		try {		
+		try {
 			for(String fileId : namesToDelete){
 				conn.deleteObject(container, fileId);
 			}
@@ -283,7 +297,7 @@ public class AmazonS3Driver implements IDepSkySDriver{
 				}
 			}
 
-			//confirm if acl well 
+			//confirm if acl well
 			conn.setBucketAcl(bucketNameToShare, acl);
 			AccessControlList newAcl = conn.getBucketAcl(bucketNameToShare);
 			Set<Grant> grants = newAcl.getGrants();
@@ -330,9 +344,9 @@ public class AmazonS3Driver implements IDepSkySDriver{
 		FileInputStream fis;
 		try {
 			fis = new FileInputStream(path);
-			Properties props = new Properties();  
-			props.load(fis);  
-			fis.close();  
+			Properties props = new Properties();
+			props.load(fis);
+			fis.close();
 			String name = props.getProperty("bucketname");
 			if(name.length() == 0){
 				char[] randname = new char[10];
@@ -346,9 +360,9 @@ public class AmazonS3Driver implements IDepSkySDriver{
 			}else{
 				defaultBucketName = name;
 			}
-		}catch(IOException e){  
-			e.printStackTrace();  
-		} 
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		return null;
 	}
 }

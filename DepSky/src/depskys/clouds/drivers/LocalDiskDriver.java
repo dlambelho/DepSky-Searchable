@@ -51,10 +51,8 @@ public class LocalDiskDriver implements IDepSkySDriver {
 				e.printStackTrace();
 			}
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		mainPath = driverpath;
@@ -174,6 +172,11 @@ public class LocalDiskDriver implements IDepSkySDriver {
 		return null;
 	}
 
+	@Override
+	public LinkedList<String> listDataUnits() {
+		return null;
+	}
+
 
 	public boolean deleteContainer(String bucket, String[] allNames, String[] uploadToAnotherAccount) throws StorageCloudException {
 		try{
@@ -222,7 +225,6 @@ public class LocalDiskDriver implements IDepSkySDriver {
 
 	@Override
 	public String[] setAcl(String bucket, String[] canonicalId, String permission) throws StorageCloudException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

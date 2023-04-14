@@ -303,6 +303,11 @@ public class RackSpaceDriver implements IDepSkySDriver{
 		return l;
 	}
 
+	@Override
+	public LinkedList<String> listDataUnits() {
+		return null;
+	}
+
 	public String[] setAcl(String bucketNameToShare, String[] canonicalId, String permission) throws StorageCloudException {
 		try {
 			HttpPut put = new HttpPut(operationURL+"/"+bucketNameToShare);

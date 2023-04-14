@@ -26,6 +26,7 @@ public class DepSkySCloudManager extends Thread {
 	public static final int GET_CONT_AND_DATA_ID = 7;
 	public static final int SET_ACL = 8;
 	public static final int LIST = 9;
+	public static final int LIST_DU = 10;
 
 	//***//
 	private static final int MAX_RETRIES = 3;
@@ -167,6 +168,17 @@ public class DepSkySCloudManager extends Thread {
 						new CloudReply(request.op, request.seqNumber,
 								driver.getDriverId(), delRes, request.cid,
 								request.reg, request.protoOp, request.isMetadataFile, request.hashMatching));
+				break;
+			case LIST_DU:
+				LinkedList<String> buckets = driver.listDataUnits();
+
+				r = new CloudReply(request.op, request.seqNumber,
+						driver.getDriverId(), buckets, request.cid,
+						request.reg, request.protoOp, request.isMetadataFile,
+						request.w_data, request.vNumber, request.allDataHash, buckets, null, request.accessToOtherAccount);
+
+				addReply(r);
+
 				break;
 			case LIST:
 

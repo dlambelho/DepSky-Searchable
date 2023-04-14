@@ -1,5 +1,8 @@
 package google;
 
+import depskyDep.IDepSkySDriver;
+import exceptions.ServiceSiteException;
+import exceptions.StorageCloudException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Properties;
-
 import org.jets3t.service.ServiceException;
 import org.jets3t.service.acl.Permission;
 import org.jets3t.service.acl.gs.GSAccessControlList;
@@ -18,10 +20,6 @@ import org.jets3t.service.acl.gs.UserByEmailAddressGrantee;
 import org.jets3t.service.impl.rest.httpclient.GoogleStorageService;
 import org.jets3t.service.model.GSObject;
 import org.jets3t.service.security.GSCredentials;
-
-import depskyDep.IDepSkySDriver;
-import exceptions.ServiceSiteException;
-import exceptions.StorageCloudException;
 
 /**
  * Class that interact directly with google storage api
@@ -87,6 +85,11 @@ public class GoogleStorageDriver implements IDepSkySDriver{
 			throw new StorageCloudException("GoogleStorageException::" + e2.getMessage());
 		}
 
+	}
+
+	@Override
+	public LinkedList<String> listDataUnits() {
+		return null;
 	}
 
 	public boolean deleteData(String bucketName, String fileId, String[] uploadToAnotherAccount) throws StorageCloudException {

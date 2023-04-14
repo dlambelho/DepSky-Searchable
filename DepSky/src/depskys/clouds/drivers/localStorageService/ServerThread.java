@@ -26,7 +26,6 @@ public class ServerThread {
 				System.out.println("Accept cloud " + cond);
 			}			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

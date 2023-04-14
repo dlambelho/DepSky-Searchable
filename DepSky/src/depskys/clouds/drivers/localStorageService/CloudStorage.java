@@ -115,6 +115,11 @@ public class CloudStorage implements IDepSkySDriver {
 		return names;
 	}
 
+	@Override
+	public LinkedList<String> listDataUnits() {
+		return null;
+	}
+
 	public String initSession() throws StorageCloudException {
 		return null;
 	}

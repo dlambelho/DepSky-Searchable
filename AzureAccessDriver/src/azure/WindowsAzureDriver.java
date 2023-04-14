@@ -221,6 +221,11 @@ public class WindowsAzureDriver implements IDepSkySDriver{
 		return find;
 	}
 
+	@Override
+	public LinkedList<String> listDataUnits() {
+		return null;
+	}
+
 	public String[] setAcl(String bucketNameToShare, String[] canonicalId, String permission) throws StorageCloudException {
 		try {
 			EnumSet<SharedAccessBlobPermissions> permissions = null;

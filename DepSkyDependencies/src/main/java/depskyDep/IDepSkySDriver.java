@@ -61,6 +61,8 @@ public interface IDepSkySDriver{
     public String initSession() throws StorageCloudException;
     
     public LinkedList<String> listNames(String prefix, String sid, String[] uploadToAnotherAccount) throws StorageCloudException;
+
+    public LinkedList<String> listDataUnits();
     
     /**
      * Terminate session, disables driver

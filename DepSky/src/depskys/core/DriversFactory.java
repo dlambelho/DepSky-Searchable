@@ -31,7 +31,7 @@ public class DriversFactory {
 	 */
 	public static IDepSkySDriver getDriver(String type, String driverId, String accessKey, String secretKey) throws StorageCloudException{
 		IDepSkySDriver res=null;
-
+//TODO add here the constructor for the new drivers
 		if(type.equals("AMAZON-S3")){
 			res = new AmazonS3Driver(driverId, accessKey, secretKey);
 		}else if(type.equals("GOOGLE-STORAGE")){

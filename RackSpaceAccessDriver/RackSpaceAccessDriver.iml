@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="CheckStyle-IDEA-Module" serialisationVersion="2">
+    <option name="activeLocationsIds" />
+  </component>
+  <component name="EclipseModuleManager">
+    <libelement value="jar://$MODULE_DIR$/lib/commons-logging-1.1.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/DepSkyDependencies.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/httpclient-4.3.3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/httpcore-4.3.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-core-2.1.1.jar!/" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
+    </src_description>
+  </component>
+</module>

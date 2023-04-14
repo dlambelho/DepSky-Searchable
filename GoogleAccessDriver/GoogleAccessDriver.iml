@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module version="4">
+  <component name="CheckStyle-IDEA-Module" serialisationVersion="2">
+    <option name="activeLocationsIds" />
+  </component>
+  <component name="EclipseModuleManager">
+    <libelement value="jar://$MODULE_DIR$/lib/commons-codec-1.4.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/commons-logging-1.1.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/DepSkyDependencies.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/google-api-services-datastore-protobuf-all-deps-v1beta2-rev1-2.1.0.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/httpclient-4.3.3.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/httpcore-4.3.2.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-core-asl-1.8.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jackson-mapper-asl-1.8.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/java-xmlbuilder-0.4.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/jets3t-0.9.1.jar!/" />
+    <libelement value="jar://$MODULE_DIR$/lib/servlet-api.jar!/" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
+    </src_description>
+  </component>
+</module>

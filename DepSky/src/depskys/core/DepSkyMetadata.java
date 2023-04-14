@@ -68,7 +68,6 @@ public class DepSkyMetadata {
 			for(int i = 0; i < toFill.length; i++)
 				toFill[i] = in.readByte();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
