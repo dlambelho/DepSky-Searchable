@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import jec.ReedSolDecoder;
 import jec.ReedSolEncoder;
+import org.schemes.booleanCash.BXTSearch;
 import pvss.ErrorDecryptingException;
 import pvss.InvalidVSSScheme;
 import pvss.PVSSEngine;
@@ -648,12 +650,23 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         return write(reg, value, null);
     }
 
-//    public synchronized List<byte[]> buildIndex() {
-//
-//        listQuorum();
-//
-//        return null;
-//    }
+    public synchronized List<byte[]> buildIndex() throws Exception {
+
+        LinkedList<String> buckets = listBuckets().get(0);
+
+        LinkedList<List<String>> filesContents = new LinkedList<>();
+
+        for(String bucket : buckets) {
+            byte[] contents = read(new DepSkySDataUnit(bucket, bucket));
+
+            String text = new String(contents);
+            filesContents.add(new ArrayList<String>(List.of(text.split("\n"))));
+        }
+
+        List<byte[]> keys = BXTSearch.setup(filesContents, buckets);
+
+        return null;
+    }
 
     public synchronized byte[] write(DepSkySDataUnit reg, byte[] value,
                                      LinkedList<Pair<String, String[]>> uploadToAnotherAccountKeys) throws Exception {

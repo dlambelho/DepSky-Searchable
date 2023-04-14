@@ -393,6 +393,63 @@ public class TextExtractPar implements Serializable {
 
     }
 
+    public static TextExtractPar extractWords(List<List<String>> allLines, List<String> files) {
+
+        Multimap<String, String> lookup1 = ArrayListMultimap.create();
+        Multimap<String, String> lookup2 = ArrayListMultimap.create();
+
+        int temporaryCounter = 0;
+
+        for (int k = 0; k < allLines.size(); k++) {
+            List<String> lines = allLines.get(k);
+            String file = files.get(k);
+
+            int counterDoc = 0;
+            for (String line : lines) {
+
+                CharArraySet noise = EnglishAnalyzer.getDefaultStopSet();
+
+                // We are using a standard tokenizer that eliminates the stop
+                // words. We can use Stemming tokenizer such Porter
+                // A set of English noise keywords is used that will eliminates
+                // words such as "the, a, etc"
+
+                Analyzer analyzer = new StandardAnalyzer(noise);
+                List<String> token0 = Tokenizer.tokenizeString(analyzer, line);
+                List<String> token = new ArrayList<String>();
+                //removing numbers/1-letter keywords
+
+                for (String value : token0) {
+                    if ((!value.matches(".*\\d+.*")
+                            &&
+                            value.length() > 1)) {
+                        token.add(value);
+                    }
+                }
+
+                temporaryCounter = temporaryCounter + token.size();
+
+
+                for (String s : token) {
+
+                    // Avoid counting occurrences of words in the same file
+                    if (!lookup2.get(file).contains(s)) {
+                        lookup2.put(file, s);
+                    }
+
+                    // Avoid counting occurrences of words in the same file
+                    if (!lookup1.get(s).contains(file)) {
+                        lookup1.put(s, file);
+                    }
+
+                }
+
+            }
+        }
+
+        return new TextExtractPar(lookup1, lookup2);
+    }
+
     public Multimap<String, String> getL1() {
         return this.lookup1;
     }

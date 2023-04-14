@@ -87,6 +87,14 @@ public class BXTSearch {
         return List.of(keyS, keyX);
     }
 
+    public static List<byte[]> setup(List<List<String>> allLines, List<String> files)
+            throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,
+            InvalidKeyException, NoSuchProviderException {
+
+        TextExtractPar.extractWords(allLines, files);
+
+        return setup(TextExtractPar.lp1);
+    }
 
     public static void search(List<String> keywords)
             throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,
