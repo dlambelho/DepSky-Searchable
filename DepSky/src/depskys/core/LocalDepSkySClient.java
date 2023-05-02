@@ -25,6 +25,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,11 +34,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import jec.ReedSolDecoder;
 import jec.ReedSolEncoder;
+import org.schemes.biex.IEX2Lev;
 import org.schemes.booleanCash.BXTSearch;
+import org.schemes.crypto.CryptoPrimitives;
 import pvss.ErrorDecryptingException;
 import pvss.InvalidVSSScheme;
 import pvss.PVSSEngine;
@@ -200,40 +205,68 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
                         map.put(sb.toString(), hashs);
                     }
                     System.out.println("DataUnit '" + sb.toString() + "' selected!");
-                } else if (input.equals("build_index")) {
-                    System.out.println("BUILDING THE INDEX FOR SEARCHES");
-//                    List<byte[]> keys = BXTSearch.setup();
-//                    System.out.println("WRITING: INDEX");
-//                    StringBuilder builder = new StringBuilder();
-//                    for(byte[] key : keys) {
-//                        builder.append(new String(Base64.getEncoder().encode(key)));
-//                        builder.append("\n");
-//                    }
-//
-//                    byte[] value = null;
-//                    value = builder.toString().getBytes();
-//
-//                    try {
-//                        dataU = new DepSkySDataUnit("index", "Index");
-//                        long acMil = System.currentTimeMillis();
-//                        byte[] hash = localDS.write(dataU, value);
-//                        LinkedList<byte[]> current = map.get(dataU.getRegId());
-//                        current.addFirst(hash);
-//                        map.put(dataU.getRegId(), current);
-//                        long tempo = System.currentTimeMillis() - acMil;
-//                        System.out.println("I'm finished writing -> " + Long.toString(tempo) + " milis");
-//                    } catch (Exception ex) {
-//                        ex.printStackTrace();
-//                    }
-                } else if (input.equals("list_all")) {
+                } else if (input.substring(0,11).equals("build_index")) {
+                    try {
+                        System.out.println("BUILDING THE INDEX FOR SEARCHES");
+                        String scheme = input.substring(11).trim();
+                        List<byte[]> keys = localDS.buildIndex(scheme);
+
+                        StringBuilder builder = new StringBuilder();
+                        for(byte[] key : keys) {
+                            builder.append(new String(Base64.getEncoder().encode(key)));
+                            builder.append("\n");
+                        }
+
+                        byte[] value = null;
+                        value = builder.toString().getBytes();
+                        dataU = new DepSkySDataUnit("index", "index");
+
+                        if (!map.containsKey("index")) {
+                            LinkedList<byte[]> hashs = new LinkedList<byte[]>();
+                            map.put("index", hashs);
+                        }
+
+                        long acMil = System.currentTimeMillis();
+                        byte[] hash = localDS.write(dataU, value);
+                        LinkedList<byte[]> current = map.get(dataU.getRegId());
+                        current.addFirst(hash);
+                        map.put(dataU.getRegId(), current);
+                        long tempo = System.currentTimeMillis() - acMil;
+                        System.out.println("I'm finished write -> " + Long.toString(tempo) + " milis");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                } else if (input.length() >= 7 && input.equals("list_all")) {
                     System.out.println("LISTING ALL OF THE EXISTING BUCKETS");
-                    LinkedList<LinkedList<String>> bucketsList = localDS.listBuckets();
-                    for (LinkedList<String> list : bucketsList) {
-                        for (String bucket : list) {
+                    List<List<String>> bucketsList = localDS.listBuckets();
+                        for (String bucket : bucketsList.get(0)) {
                             System.out.println(bucket);
                         }
-                        System.out.println(
-                                "----------------------------------------------------------------");
+
+                } else if (input.length() > 7 && input.substring(0,6).equals(("search"))) {
+                    String query = input.substring(7).trim();
+                    List<String> keywords = new ArrayList<>();
+                    for (String keyword : query.split(",")) {
+                        if(!keyword.isEmpty()) {
+                            if(keyword.trim().contains(" ")){
+                                keywords.removeAll(keywords);
+                                break;
+                            }
+                            keywords.add(keyword.trim());
+                        }
+                    }
+
+                    if(keywords.size() == 0) {
+                        System.out.println("Wrong search format used");
+                    } else {
+                        List<String> buckets;
+                        try {
+                            buckets = localDS.search("BXT", keywords);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        buckets.stream().forEach(System.out::println);
                     }
                 } else {
                     if (dataU != null) {
@@ -254,7 +287,7 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
                             }
                         } else if (input.equals("delete")) {
                             try {
-                                localDS.deleteContainer(dataU);
+                                localDS.deleteAllData(dataU);
                                 System.out.println("I'm finished delete");
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -613,8 +646,8 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
     }
 
-    public void deleteContainer(DepSkySDataUnit reg) throws Exception {
-        deleteContainer(reg, null);
+    public void deleteAllData(DepSkySDataUnit reg) throws Exception {
+        deleteAllData(reg, null);
     }
 
     /**
@@ -622,7 +655,7 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
      *
      * @param reg - Data Unit
      */
-    public void deleteContainer(DepSkySDataUnit reg, LinkedList<Pair<String, String[]>> uploadToAnotherAccountKeys)
+    public void deleteAllData(DepSkySDataUnit reg, LinkedList<Pair<String, String[]>> uploadToAnotherAccountKeys)
             throws Exception {
 
         CloudRepliesControlSet rcs = null;
@@ -639,6 +672,82 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
         }
     }
 
+    public void deleteContainer(DepSkySDataUnit reg, LinkedList<Pair<String, String[]>> uploadToAnotherAccountKeys)
+            throws Exception {
+
+        CloudRepliesControlSet rcs = null;
+        try {
+            int seq = getNextSequence();
+            rcs = new CloudRepliesControlSet(N, seq);
+            replies.put(seq, rcs);
+            broadcastGetMetadata(seq, reg, DepSkySCloudManager.DEL_CONT, null, uploadToAnotherAccountKeys);
+            rcs.waitReplies.acquire();
+            lastMetadataReplies = rcs.replies;
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized List<byte[]> buildIndex(String scheme) throws Exception {
+
+        List<String> buckets = listBuckets().get(0);
+
+        LinkedList<List<String>> filesContents = new LinkedList<>();
+
+        for(String bucket : buckets) {
+            byte[] contents = read(new DepSkySDataUnit(bucket, bucket));
+
+            String text = new String(contents);
+            filesContents.add(new ArrayList<String>(Arrays.asList(text.split("\n"))));
+        }
+
+        List<byte[]> keys = new ArrayList<>();
+        if (scheme.equals("BIEX")) {
+            keys.add(CryptoPrimitives.randomBytes(32));
+            keys.add(CryptoPrimitives.randomBytes(32));
+            keys.add(CryptoPrimitives.randomBytes(32));
+            IEX2Lev.setup(keys,null, null, 0 , 0, 0);
+        } else if (scheme.equals("BIEX")){
+            keys = BXTSearch.setup(filesContents, buckets);
+        } else {
+            throw new RuntimeException("The scheme does not exist");
+        }
+
+        return keys;
+    }
+
+    public synchronized List<String> search(String scheme, List<String> keywords) throws Exception {
+
+        List<String> result = new ArrayList<>();
+        List<byte[]> keys = readKeys();
+        switch (scheme) {
+            case "BXT":
+                result = BXTSearch.search(keywords, keys.get(0), keys.get(1));
+                break;
+            case "BIEX":
+
+                break;
+        }
+
+        return result;
+    }
+
+    public synchronized List<byte[]> readKeys() throws Exception {
+        List<byte[]> results = new ArrayList<>(2);
+
+        byte[] readKeys = read(new DepSkySDataUnit("index", "index"));
+        String[] keys = new String(readKeys).split("\n");
+
+        for (String key : keys) {
+            if (!key.isEmpty()) {
+                results.add(Base64.getDecoder().decode(key));
+            }
+        }
+
+        return results;
+    }
+
     /**
      * Writes the value value in the corresponding dataUnit reg
      *
@@ -648,24 +757,6 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
      */
     public synchronized byte[] write(DepSkySDataUnit reg, byte[] value) throws Exception {
         return write(reg, value, null);
-    }
-
-    public synchronized List<byte[]> buildIndex() throws Exception {
-
-        LinkedList<String> buckets = listBuckets().get(0);
-
-        LinkedList<List<String>> filesContents = new LinkedList<>();
-
-        for(String bucket : buckets) {
-            byte[] contents = read(new DepSkySDataUnit(bucket, bucket));
-
-            String text = new String(contents);
-            filesContents.add(new ArrayList<String>(List.of(text.split("\n"))));
-        }
-
-        List<byte[]> keys = BXTSearch.setup(filesContents, buckets);
-
-        return null;
     }
 
     public synchronized byte[] write(DepSkySDataUnit reg, byte[] value,
@@ -741,7 +832,7 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
 
     }
 
-    public LinkedList<LinkedList<String>> listBuckets() {
+    public List<List<String>> listBuckets() {
         CloudRepliesControlSet rcs = null;
         try {
             int seq = getNextSequence();
@@ -755,7 +846,7 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
                 manager.doRequest(drivers[i].getDriverId(), r);
             }
 
-            LinkedList<LinkedList<String>> listPerClouds = new LinkedList<LinkedList<String>>();
+            List<List<String>> listPerClouds = new LinkedList<List<String>>();
             rcs.waitReplies.acquire();
             int nullcounter = 0;
             LinkedList<String> res;
@@ -765,9 +856,9 @@ public class LocalDepSkySClient implements IDepSkySProtocol {
                 if (r.listNames == null) {
                     nullcounter++;
                 } else {
-                    res = r.listNames;
-                    res.addFirst(r.cloudId);
-                    listPerClouds.add(res);
+                    listPerClouds.add(r.listNames.stream().map(bucket -> {
+                        return bucket.substring(0, bucket.length()-5);
+                    }).collect(Collectors.toList()));
                 }
             }
             if (nullcounter > N) {

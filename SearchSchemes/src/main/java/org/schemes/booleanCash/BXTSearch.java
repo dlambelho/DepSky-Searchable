@@ -46,8 +46,8 @@ public class BXTSearch {
             throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, NoSuchProviderException {
 
-        byte[] keyS = new byte[32];
-        byte[] keyX = new byte[32];
+        byte[] keyS = CryptoPrimitives.randomBytes(32);
+        byte[] keyX = CryptoPrimitives.randomBytes(32);
 
         for (String word : lookup.keySet()) {
             byte[] keyE = CryptoPrimitives.generateHmac(keyS, word);
@@ -91,12 +91,12 @@ public class BXTSearch {
             throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, NoSuchProviderException {
 
-        TextExtractPar.extractWords(allLines, files);
+        TextExtractPar extraction = TextExtractPar.extractWords(allLines, files);
 
-        return setup(TextExtractPar.lp1);
+        return setup(extraction.getL1());
     }
 
-    public static void search(List<String> keywords)
+    public static List<String> search(List<String> keywords, byte[] keyS, byte[] keyX)
             throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, NoSuchProviderException {
         String firstWord = keywords.remove(0);
@@ -147,7 +147,7 @@ public class BXTSearch {
             }
         }
 
-        System.out.println(resultSet.stream().sorted().toList());
+        return resultSet.stream().sorted().toList();
     }
 
     public static void main(String[] args)
@@ -176,7 +176,7 @@ public class BXTSearch {
             if (!option.equals("exit")) {
                 keywords = new ArrayList<>(List.of(conjunctions));
 
-                search(keywords);
+//                search(keywords);
             }
 
         } while (!option.equals("exit"));

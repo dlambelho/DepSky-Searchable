@@ -114,11 +114,24 @@ public class AmazonS3Driver implements IDepSkySDriver {
             PropertiesCredentials b = new PropertiesCredentials(new ByteArrayInputStream(mprops.getBytes()));
 
             conn = new AmazonS3Client(b);
-            conn.setEndpoint("http://127.0.0.1:9000"); //Para virtual Box funcionar
-
-            if (!conn.doesBucketExist(defaultBucketName)) {
-                conn.createBucket(defaultBucketName, region);
+            switch(driverId) {
+                case "cloud1":
+                    conn.setEndpoint("http://127.0.0.1:9000");
+                    break;
+                case "cloud2":
+                    conn.setEndpoint("http://127.0.0.1:9001");
+                    break;
+                case "cloud3":
+                    conn.setEndpoint("http://127.0.0.1:9002");
+                    break;
+                case "cloud4":
+                    conn.setEndpoint("http://127.0.0.1:9003");
+                    break;
             }
+
+//            if (!conn.doesBucketExist(defaultBucketName)) {
+//                conn.createBucket(defaultBucketName, region);
+//            }
 
         } catch (IOException e) {
             //System.out.println("Cannot connect with Amazon S3.");
